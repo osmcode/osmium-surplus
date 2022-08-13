@@ -1,0 +1,19 @@
+#
+#  meta tags
+#
+#  Tags that are not concerned with the object itself, but with the
+#  workflow of the OSM community.
+#
+FIXME
+attribution
+check_date
+comment
+converted_by
+created_by
+fixme
+note
+note:*
+source
+source:*
+source_ref*
+survey:date

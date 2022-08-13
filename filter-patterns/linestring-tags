@@ -1,0 +1,19 @@
+#
+#  linestring tags
+#
+#  Tags that indicate that a closed way should be interpreted as linestring.
+#
+barrier
+cycleway
+foot
+footway
+highway!=elevator
+junction=roundabout
+lanes
+man_made=cutline,pipeline
+natural=cliff,coastline
+oneway
+power=line,minor_line
+service=parking_aisle,driveway
+sidewalk
+waterway=stream,ditch,river,drain,canal

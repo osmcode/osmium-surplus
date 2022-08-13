@@ -1,0 +1,31 @@
+#
+#  polygon tags
+#
+#  Tags that indicate that a closed way should be interpreted as polygon.
+#
+abandoned:building
+aeroway=hangar,apron,helipad,aerodrome,terminal
+amenity
+building
+building:levels
+building:part
+garden:type
+golf=bunker,tee,green,fairway
+historic=memorial,wayside_cross,ruins,archaeological_site,monument,wayside_shrine,castle,building,tomb
+landcover
+landuse
+leisure=garden,park,pitch,playground,swimming_pool,sports_centre,nature_reserve,stadium,golf_course,common,recreation_ground
+man_made=storage_tank,tower,cutline,works,silo,water_well,water_tower,bridge,wastewater_plant
+meadow
+natural=wood,scrub,water,wetland,grassland,bare_rock,heath,rock,sand,beach,scree,glacier,shingle
+office
+place
+power=generator,substation,transformer,sub_station
+roof:shape
+shop
+sport=soccer,tennis,baseball,basketball,swimming,multi,golf,equestrian,volleyball,beachvolleyball,american_football,skateboard,bowls,boules,table_tennis,shooting,cricket
+tourism=hotel,picnic_site,guest_house,camp_site,museum,hostel,motel,chalet,apartment,caravan_site,alpine_hut,theme_park,zoo
+water
+waterway=riverbank
+wetland
+wood
