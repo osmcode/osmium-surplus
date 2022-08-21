@@ -237,21 +237,21 @@ public:
         TypeMap types;
         vout() << "Reading relations...\n";
         auto ids = read_relations(input_file, &types);
-        vout() << "Found {} different type tags.\n"_format(types.size());
+        vout() << fmt::format( "Found {:z} different type tags.\n", types.size());
         types.insert_into_db(&db);
 
         vout() << "Reading ways...\n";
         read_ways(input_file, &ids);
         sort_unique(&ids.nodes());
 
-        vout() << "Data to copy: {} nodes, {} ways, {} relations.\n"_format(
+        vout() << fmt::format( "Data to copy: {} nodes, {} ways, {} relations.\n",
             ids.nodes().size(), ids.ways().size(), ids.relations().size());
 
         std::vector<std::unique_ptr<osmium::io::Writer>> writers;
         writers.reserve(types.size());
         for (auto const &type : types) {
             writers.emplace_back(std::make_unique<osmium::io::Writer>(
-                "{}/{}.osm.pbf"_format(output(),
+                fmt::format("{}/{}.osm.pbf",output(),
                                        TypeMap::generate_filename(type.first)),
                 osmium::io::overwrite::allow));
         }

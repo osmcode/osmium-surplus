@@ -44,7 +44,7 @@ void BasicApp::pre()
 void BasicApp::post()
 {
     osmium::MemoryUsage mem;
-    vout() << "Overall memory usage: {} MByte current, {} MBytes peak\n"_format(
+    vout() << fmt::format( "Overall memory usage: {} MByte current, {} MBytes peak\n",
         mem.current(), mem.peak());
 
     vout() << "Done.\n";
