@@ -190,7 +190,7 @@ public:
 
         std::array<int64_t, num_variables> counters{0};
         for (auto time = m_stats.size() - 1; time > 0; --time) {
-            std::string const dm = "-{} days"_format(time);
+            std::string const dm = fmt::format("-{} days", time);
 
             calculate_derived_stats(time);
 

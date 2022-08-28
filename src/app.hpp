@@ -55,7 +55,7 @@ int run_app(int argc, char *argv[]) noexcept
         } catch (CLI::ParseError const &e) {
             return app.exit(e) > 0 ? 2 : 0;
         } catch (std::exception const &e) {
-            fmt::print(stderr, "Error: {}\n"_format(e.what()));
+            fmt::print(stderr, "Error: {}\n", e.what());
             return 1;
         }
     } catch (...) {
