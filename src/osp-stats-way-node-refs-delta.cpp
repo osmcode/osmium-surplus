@@ -65,8 +65,8 @@ public:
         auto const basis =
             static_cast<double>(m_way_nodes_count - m_way_count) / 100.0;
 
-        fmt::print( ": {:10d} (~ {:5.2f}%)\n", m_distance[i],
-                                                      m_distance[i] / basis);
+        std::cout << fmt::format(": {:10d} (~ {:5.2f}%)\n", m_distance[i],
+                                 m_distance[i] / basis);
     }
 
     void output_stats() const

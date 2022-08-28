@@ -108,23 +108,24 @@ public:
         vout() << "Done processing.\n";
 
         for (auto t : nwr) {
-            vout() << fmt::format("Copied {}/{} ({}%) {}s.\n",
-                counts_out(t), counts_in(t),
-                percent(counts_out(t), counts_in(t)),
-                osmium::item_type_to_name(t));
+            vout() << fmt::format("Copied {}/{} ({}%) {}s.\n", counts_out(t),
+                                  counts_in(t),
+                                  percent(counts_out(t), counts_in(t)),
+                                  osmium::item_type_to_name(t));
         }
         for (auto t : nwr) {
             if (ids(t).empty()) {
-                vout() << fmt::format( "All {}s found.\n",
-                    osmium::item_type_to_name(t));
+                vout() << fmt::format("All {}s found.\n",
+                                      osmium::item_type_to_name(t));
             } else {
-                vout() << fmt::format( "Missing {} {}s.\n",
-                    ids(t).size(), osmium::item_type_to_name(t));
+                vout() << fmt::format("Missing {} {}s.\n", ids(t).size(),
+                                      osmium::item_type_to_name(t));
             }
         }
         for (auto t : nwr) {
             vout() << fmt::format("Memory used for {} id indexes: {} MBytes.\n",
-                osmium::item_type_to_name(t), mbytes(ids(t).used_memory()));
+                                  osmium::item_type_to_name(t),
+                                  mbytes(ids(t).used_memory()));
         }
     }
 }; // class App
