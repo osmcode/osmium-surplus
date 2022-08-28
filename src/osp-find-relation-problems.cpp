@@ -200,6 +200,16 @@ class CheckHandler : public osmium::handler::Handler
         }
     }
 
+    static bool check_self_ref(osmium::Relation const &relation) noexcept
+    {
+        auto const &members = relation.members();
+        return std::any_of(members.cbegin(), members.cend(),
+                           [&](auto const &m) {
+                               return m.type() == osmium::item_type::relation &&
+                                      m.ref() == relation.id();
+                           });
+    }
+
 public:
     CheckHandler(Outputs *outputs, options_type const &options)
     : m_outputs(*outputs), m_options(options)
@@ -235,6 +245,10 @@ public:
 
         if (relation.tags().size() == 1) {
             m_outputs["relation_only_type_tag"].add(relation);
+        }
+
+        if (check_self_ref(relation)) {
+            m_outputs["relation_references_self"].add(relation);
         }
 
         if (!std::strcmp(type, "multipolygon")) {
@@ -384,6 +398,7 @@ try {
     outputs.add_output("relation_only_type_tag");
     outputs.add_output("relation_no_type_tag");
     outputs.add_output("relation_large");
+    outputs.add_output("relation_references_self");
     outputs.add_output("multipolygon_node_member", true, false);
     outputs.add_output("multipolygon_relation_member", false, false);
     outputs.add_output("multipolygon_unknown_role", false, true);
