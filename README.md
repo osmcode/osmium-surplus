@@ -127,6 +127,10 @@ The timestamp on the stats is the last timestamp of any object in the input
 file. This may differ slightly between the various commands, because not all
 commands read all object types.
 
+## Contributing
+
+Contributions are welcome. Please use `clang-format` to format your changes.
+
 ## Author
 
 Jochen Topf (jochen@topf.org)
