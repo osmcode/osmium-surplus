@@ -33,6 +33,7 @@ struct options_type
 
 struct stats_type
 {
+    uint64_t relations = 0;
     uint64_t relation_members = 0;
 };
 
@@ -210,6 +211,7 @@ public:
             return;
         }
 
+        ++m_stats.relations;
         m_stats.relation_members += relation.members().size();
 
         if (relation.members().empty()) {
@@ -418,6 +420,7 @@ try {
     auto const last_time{last_timestamp_handler.get_timestamp()};
     write_stats(output_dirname + "/stats-relation-problems.db", last_time,
                 [&](std::function<void(char const *, uint64_t)> &add_stat) {
+                    add_stat("relation_count", handler.stats().relations);
                     add_stat("relation_member_count",
                              handler.stats().relation_members);
                     outputs.for_all([&](Output &output) {
