@@ -33,7 +33,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Osmium 2.17.0 COMPONENTS io ogr)
 include_directories(SYSTEM ${OSMIUM_INCLUDE_DIRS})
 
-find_package(SQLite3)
+find_package(SQLite3 REQUIRED)
 
 include_directories(SYSTEM include)
 
