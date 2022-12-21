@@ -30,7 +30,7 @@ class Output
         : member_id(mem_id), relation_id(rel_id)
         {}
 
-        bool operator<(mem_rel_mapping const &other) noexcept
+        bool operator<(mem_rel_mapping const &other) const noexcept
         {
             return std::tie(member_id, relation_id) <
                    std::tie(other.member_id, other.relation_id);
