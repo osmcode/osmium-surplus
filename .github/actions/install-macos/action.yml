@@ -1,0 +1,14 @@
+name: Install Prerequisites on macOS
+
+runs:
+  using: composite
+  steps:
+    - name: Install homebrew packages
+      run: |
+        brew install \
+             boost \
+             fmt \
+             gdal \
+             sqlite
+      shell: bash
+

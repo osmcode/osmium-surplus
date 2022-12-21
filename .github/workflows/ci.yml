@@ -1,0 +1,186 @@
+name: CI
+
+on: [ push, pull_request ]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [Ubuntu-20, Ubuntu-22, Debian-11, Debian-Testing, Debian-Experimental, Fedora-35, Fedora-36]
+        build_type: [Dev]
+        cpp_compiler: [g++]
+        cpp_version: [c++11]
+        include:
+          - name: Ubuntu-20
+            # Uses gcc 9.3.0, clang 10.0.0, cmake 3.16.3
+            image: "ubuntu:20.04"
+            ubuntu: 20
+          - name: Ubuntu-22
+            # Uses gcc 11.2.0, clang 14.0.0, cmake 3.22.1
+            image: "ubuntu:22.04"
+            ubuntu: 22
+            CXXFLAGS: -Wno-stringop-overread
+          - name: Debian-11
+            # Uses gcc 10.2.1, clang 11.0.1, cmake 3.18.4
+            image: "debian:bullseye"
+          - name: Debian-11
+            # Uses gcc 10.2.1, clang 11.0.1, cmake 3.18.4
+            image: "debian:bullseye"
+            cpp_version: c++17
+          - name: Debian-11
+            # Uses gcc 10.2.1, clang 11.0.1, cmake 3.18.4
+            image: "debian:bullseye"
+            cpp_version: c++20
+          - name: Debian-11
+            # Uses gcc 10.2.1, clang 11.0.1, cmake 3.18.4
+            image: "debian:bullseye"
+            c_compiler: clang
+            cpp_compiler: clang++
+            cpp_version: c++17
+          - name: Debian-11
+            # Uses gcc 10.2.1, clang 11.0.1, cmake 3.18.4
+            image: "debian:bullseye"
+            c_compiler: clang
+            cpp_compiler: clang++
+            cpp_version: c++20
+          - name: Debian-11
+            # Uses gcc 10.2.1, clang 11.0.1, cmake 3.18.4
+            image: "debian:bullseye"
+            build_type: RelWithDebInfo
+          - name: Debian-11
+            # Uses gcc 10.2.1, clang 11.0.1, cmake 3.18.4
+            image: "debian:bullseye"
+            c_compiler: clang
+            cpp_compiler: clang++
+          - name: Debian-Testing
+            # Uses gcc 10.3.0, clang 11.1.0, cmake 3.21.3
+            image: "debian:testing"
+            CXXFLAGS: -Wno-stringop-overread
+          - name: Debian-Testing
+            # Uses gcc 10.3.0, clang 11.1.0, cmake 3.21.3
+            image: "debian:testing"
+            c_compiler: clang
+            cpp_compiler: clang++
+          - name: Debian-Experimental
+            # Uses gcc 11, clang 14, cmake 3.21.3
+            image: "debian:experimental"
+            CXXFLAGS: -Wno-stringop-overread
+          - name: Debian-Experimental
+            # Uses gcc 11, clang 14, cmake 3.21.3
+            image: "debian:experimental"
+            c_compiler: clang-14
+            cpp_compiler: clang++-14
+          - name: Fedora-35
+            # Uses gcc 11.2.1, clang 12.0.1, cmake 3.20.5
+            image: "fedora:35"
+            CXXFLAGS: -Wno-stringop-overread
+          - name: Fedora-36
+            # Uses gcc 12.2.0, clang 14.0.5, cmake 3.24.2
+            image: "fedora:36"
+            CXXFLAGS: -Wno-stringop-overread
+    container:
+      image: ${{ matrix.image }}
+      env:
+        LANG: en_US.UTF-8
+        BUILD_TYPE: ${{ matrix.build_type }}
+        CC: ${{ matrix.c_compiler }}
+        CXX: ${{ matrix.cpp_compiler }}
+        CXXFLAGS: ${{ matrix.CXXFLAGS }}
+        LDFLAGS: ${{ matrix.LDFLAGS }}
+        CPP_VERSION: ${{ matrix.cpp_version }}
+        APT_LISTCHANGES_FRONTEND: none
+        DEBIAN_FRONTEND: noninteractive
+    steps:
+      - name: Prepare container (apt)
+        shell: bash
+        if: startsWith(matrix.image, 'debian:') || startsWith(matrix.image, 'ubuntu:')
+        run: |
+          apt-get update -qq
+          apt-get install -yq \
+            clang \
+            cmake \
+            g++ \
+            git \
+            libboost-dev \
+            libbz2-dev \
+            libexpat1-dev \
+            libfmt-dev \
+            libgdal-dev \
+            liblz4-dev \
+            libsqlite3-dev \
+            make \
+            zlib1g-dev
+      - name: Install compiler
+        shell: bash
+        if: matrix.cpp_compiler == 'clang++-14'
+        run: apt-get install -yq clang-14
+      - name: Prepare container (dnf)
+        shell: bash
+        if: startsWith(matrix.image, 'fedora:')
+        run: |
+          dnf install --quiet --assumeyes \
+              boost-devel \
+              bzip2-devel \
+              cmake \
+              expat-devel \
+              fmt-devel \
+              gcc-c++ \
+              gdal-devel \
+              git \
+              lz4-devel \
+              make \
+              sqlite-devel \
+              zlib-devel
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-from-git
+      - uses: ./.github/actions/cmake
+      - uses: ./.github/actions/build
+      - uses: ./.github/actions/ctest
+
+  ubuntu-latest:
+    runs-on: ubuntu-22.04
+    env:
+      CC: clang-15
+      CXX: clang++-15
+      BUILD_TYPE: Dev
+    steps:
+      - name: Install new clang
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/llvm-snapshot.asc
+          sudo add-apt-repository 'deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main'
+          sudo apt-get update -qq
+          sudo apt-get install -yq clang-15
+        shell: bash
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-ubuntu
+      - uses: ./.github/actions/install-from-git
+      - uses: ./.github/actions/cmake
+      - uses: ./.github/actions/build
+      - uses: ./.github/actions/ctest
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "macos-11"
+        build_type: [Dev]
+        include:
+          - os: "macos-11"
+            build_type: Release
+    runs-on: ${{ matrix.os }}
+    env:
+      CC: clang
+      CXX: clang++
+      BUILD_TYPE: ${{ matrix.build_type }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/install-macos
+      - uses: ./.github/actions/install-from-git
+      - uses: ./.github/actions/cmake
+      - uses: ./.github/actions/build
+      - uses: ./.github/actions/ctest
+
