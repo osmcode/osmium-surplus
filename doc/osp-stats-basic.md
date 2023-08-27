@@ -5,7 +5,7 @@ osp-stats-basic - Calculate some basic statistics on OSM data files
 
 # SYNOPSIS
 
-**osp-history-stats-basic** \[*OPTIONS*\] *OSM-FILE*
+**osp-stats-basic** \[*OPTIONS*\] *OSM-FILE*
 
 # DESCRIPTION
 

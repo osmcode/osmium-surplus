@@ -5,7 +5,7 @@ osp-stats-way-nodes
 
 # SYNOPSIS
 
-**odmt-way-nodes** INPUT-FILE
+**osp-stats-way-nodes** INPUT-FILE
 
 # DESCRIPTION
 
