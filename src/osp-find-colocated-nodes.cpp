@@ -117,7 +117,7 @@ public:
 
         auto const bytes = m_data.size() * sizeof(osmium::Location);
         auto const length = ::write(m_fd, m_data.data(), bytes);
-        if (length != long(bytes)) { // NOLINT(google-runtime-int)
+        if (length != static_cast<long>(bytes)) { // NOLINT(google-runtime-int)
             throw std::system_error{errno, std::system_category(),
                                     std::string{"can't write to file '"} +
                                         m_filename + "'"};

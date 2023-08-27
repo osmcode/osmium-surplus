@@ -1,5 +1,5 @@
 ---
-Checks: '*,-abseil-*,-altera-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-static-cast-downcast,-cppcoreguidelines-pro-type-vararg,-fuchsia-*,-hicpp-no-array-decay,-hicpp-vararg,-llvmlibc-*,-modernize-use-trailing-return-type,-readability-implicit-bool-conversion,-readability-magic-numbers'
+Checks: '*,-abseil-*,-altera-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-bounds-constant-array-index,-cppcoreguidelines-pro-bounds-pointer-arithmetic,-cppcoreguidelines-pro-type-static-cast-downcast,-cppcoreguidelines-pro-type-vararg,-fuchsia-*,-hicpp-no-array-decay,-hicpp-vararg,-llvmlibc-*,-modernize-use-trailing-return-type,-readability-identifier-length,-readability-implicit-bool-conversion,-readability-magic-numbers'
 #
 #  For a list of check options, see:
 #  https://clang.llvm.org/extra/clang-tidy/checks/list.html
@@ -40,6 +40,9 @@ Checks: '*,-abseil-*,-altera-*,-cppcoreguidelines-avoid-magic-numbers,-cppcoregu
 #
 #  modernize-use-trailing-return-type
 #    I am not quite that modern.
+#
+#  readability-identifier-length
+#    Short identifiers are okay in some cases.
 #
 #  readability-implicit-bool-conversion
 #    I don't think this makes the code more readable.
