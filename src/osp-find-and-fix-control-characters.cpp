@@ -186,7 +186,7 @@ public:
     {
         vout() << "        Writing errors to: '" << m_error_file << "'.\n";
         osmium::io::Reader reader{input(), osmium::osm_entity_bits::nwr};
-        osmium::io::Header header = reader.header();
+        osmium::io::Header const header = reader.header();
         osmium::io::Writer writer_error{m_error_file,
                                         osmium::io::overwrite::allow};
 

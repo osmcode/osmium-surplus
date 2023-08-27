@@ -75,12 +75,14 @@ class CheckMPManager
             using iterator =
                 boost::filter_iterator<MPFilter,
                                        osmium::TagList::const_iterator>;
-            iterator rfi_begin{std::cref(m_filter), rtags.cbegin(),
-                               rtags.cend()};
-            iterator rfi_end{std::cref(m_filter), rtags.cend(), rtags.cend()};
-            iterator wfi_begin{std::cref(m_filter), wtags.cbegin(),
-                               wtags.cend()};
-            iterator wfi_end{std::cref(m_filter), wtags.cend(), wtags.cend()};
+            iterator const rfi_begin{std::cref(m_filter), rtags.cbegin(),
+                                     rtags.cend()};
+            iterator const rfi_end{std::cref(m_filter), rtags.cend(),
+                                   rtags.cend()};
+            iterator const wfi_begin{std::cref(m_filter), wtags.cbegin(),
+                                     wtags.cend()};
+            iterator const wfi_end{std::cref(m_filter), wtags.cend(),
+                                   wtags.cend()};
 
             if (std::equal(wfi_begin, wfi_end, rfi_begin) &&
                 d == std::distance(rfi_begin, rfi_end)) {

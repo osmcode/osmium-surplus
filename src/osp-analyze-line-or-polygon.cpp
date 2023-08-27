@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
         filter_import =
             load_filter_patterns(expressions_directory + "/import-tags");
 
-        osmium::io::File input_file{input_filename};
+        osmium::io::File const input_file{input_filename};
 
         osmium::io::Reader reader{input_file, osmium::osm_entity_bits::way};
 

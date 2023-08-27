@@ -536,7 +536,7 @@ public:
                         break;
                     }
                     if (y_range_overlap(s1, s2)) {
-                        osmium::Location i = intersection(s1, s2);
+                        osmium::Location const i = intersection(s1, s2);
                         if (i) {
                             intersections.push_back(i);
                         }

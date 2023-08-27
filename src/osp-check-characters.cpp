@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        osmium::io::File input_file{input_filename};
+        osmium::io::File const input_file{input_filename};
 
         osmium::VerboseOutput vout{true};
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 
         while (auto const buffer = reader.read()) {
             for (auto const &object : buffer.select<osmium::OSMObject>()) {
-                int level = check_chars(object);
+                int const level = check_chars(object);
                 if (level == 1) {
                     writer_undecided(object);
                 } else if (level == 2) {

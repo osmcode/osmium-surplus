@@ -56,10 +56,10 @@ struct StatHandler : public osmium::handler::Handler
         }
 
         osmium::TagList const &tags = node.tags();
-        osmium::tags::KeyFilter::iterator fi_begin{filter, tags.begin(),
-                                                   tags.end()};
-        osmium::tags::KeyFilter::iterator fi_end{filter, tags.end(),
-                                                 tags.end()};
+        osmium::tags::KeyFilter::iterator const fi_begin{filter, tags.begin(),
+                                                         tags.end()};
+        osmium::tags::KeyFilter::iterator const fi_end{filter, tags.end(),
+                                                       tags.end()};
 
         auto const c = std::distance(fi_begin, fi_end);
 

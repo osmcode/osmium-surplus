@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
             in_multiple_ways;
         osmium::index::IdSetDense<osmium::unsigned_object_id_type> in_relation;
 
-        osmium::io::File input_file{input_filename};
+        osmium::io::File const input_file{input_filename};
 
         std::uint64_t count_ways = 0;
         std::uint64_t count_relations = 0;

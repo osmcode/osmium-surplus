@@ -140,10 +140,10 @@ public:
         vout() << "        Writing changeset errors to '" << m_changeset_error
                << "'.\n";
 
-        osmium::io::File changeset_input_file{m_changeset_input};
-        osmium::io::File data_input_file{input()};
-        osmium::io::File changeset_error_file{m_changeset_error};
-        osmium::io::File data_error_file{output()};
+        osmium::io::File const changeset_input_file{m_changeset_input};
+        osmium::io::File const data_input_file{input()};
+        osmium::io::File const changeset_error_file{m_changeset_error};
+        osmium::io::File const data_error_file{output()};
 
         vout() << "Reading changesets...\n";
         auto ranges = read_changset_times(changeset_input_file);

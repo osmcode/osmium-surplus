@@ -137,8 +137,8 @@ int main(int argc, char *argv[])
 
         auto const filter = load_filter_patterns(filter_filename);
 
-        osmium::io::File input_file{input_filename};
-        osmium::io::File output_file{output_filename};
+        osmium::io::File const input_file{input_filename};
+        osmium::io::File const output_file{output_filename};
 
         osmium::io::Reader reader{input_file};
         osmium::io::Writer writer{output_file, osmium::io::overwrite::allow};

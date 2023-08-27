@@ -84,7 +84,7 @@ public:
             return 0;
         }
 
-        std::string type = rel_type;
+        std::string const type = rel_type;
         auto [it, inserted] = m_map.try_emplace(type, m_types.size());
         if (inserted) {
             m_types.emplace_back(type, 0);

@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
             in_multiple_ways;
         osmium::index::IdSetDense<osmium::unsigned_object_id_type> in_relation;
 
-        osmium::io::File input_file{input_filename};
+        osmium::io::File const input_file{input_filename};
 
         osmium::io::Reader reader1{input_file,
                                    osmium::osm_entity_bits::way |

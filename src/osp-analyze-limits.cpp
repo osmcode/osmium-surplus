@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
         std::vector<std::size_t> hist_tags_count;
         std::vector<std::size_t> hist_tags_bytes;
 
-        osmium::io::File input_file{input_filename};
+        osmium::io::File const input_file{input_filename};
 
         osmium::VerboseOutput vout{true};
 

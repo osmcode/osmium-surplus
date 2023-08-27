@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
             return 1;
         }
 
-        osmium::io::File input_file{input_filename};
+        osmium::io::File const input_file{input_filename};
 
         osmium::VerboseOutput vout{true};
 
