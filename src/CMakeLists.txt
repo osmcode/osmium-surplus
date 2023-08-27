@@ -61,5 +61,6 @@ exec(osp-stats-tags)
 exec(osp-stats-tags-on-nodes SRCS app.cpp)
 exec(osp-stats-way-node-refs-delta SRCS app.cpp)
 exec(osp-stats-way-nodes)
+exec(osp-stats-way-nodes-idx)
 
 #-----------------------------------------------------------------------------
