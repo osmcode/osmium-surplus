@@ -3,6 +3,7 @@
 
 #include <gdalcpp.hpp>
 
+#include <osmium/geom/haversine.hpp>
 #include <osmium/geom/ogr.hpp>
 #include <osmium/io/any_input.hpp>
 #include <osmium/io/any_output.hpp>
@@ -36,6 +37,7 @@ struct options_type
     bool verbose = true;
     std::size_t max_nodes = 1800;
     double max_angle = 0.03;
+    double max_segment_length = 100000.0;
 };
 
 struct stats_type
@@ -51,6 +53,7 @@ struct stats_type
     uint64_t duplicate_node = 0;
     uint64_t close_nodes = 0;
     uint64_t many_nodes = 0;
+    uint64_t long_segment = 0;
 };
 
 static osmium::Location intersection(osmium::Segment const &s1,
@@ -211,6 +214,7 @@ class CheckHandler : public HandlerWithDB
     gdalcpp::Layer m_layer_way_acute_angle_lines;
     gdalcpp::Layer m_layer_way_duplicate_segments;
     gdalcpp::Layer m_layer_way_many_nodes;
+    gdalcpp::Layer m_layer_way_long_segments;
 
     std::unique_ptr<osmium::io::Writer> m_writer_self_intersection;
     std::unique_ptr<osmium::io::Writer> m_writer_spike;
@@ -222,6 +226,7 @@ class CheckHandler : public HandlerWithDB
     std::unique_ptr<osmium::io::Writer> m_writer_duplicate_node;
     std::unique_ptr<osmium::io::Writer> m_writer_close_nodes;
     std::unique_ptr<osmium::io::Writer> m_writer_many_nodes;
+    std::unique_ptr<osmium::io::Writer> m_writer_long_segment;
 
     bool detect_spikes(osmium::Way const &way)
     {
@@ -375,7 +380,9 @@ public:
       m_layer_way_duplicate_segments(m_dataset, "way_duplicate_segments",
                                      wkbLineString, {"SPATIAL_INDEX=NO"}),
       m_layer_way_many_nodes(m_dataset, "way_many_nodes", wkbLineString,
-                             {"SPATIAL_INDEX=NO"})
+                             {"SPATIAL_INDEX=NO"}),
+      m_layer_way_long_segments(m_dataset, "way_long_segments", wkbLineString,
+                                {"SPATIAL_INDEX=NO"})
     {
 
         m_layer_way_one_node.add_field("way_id", OFTInteger, 10);
@@ -420,6 +427,10 @@ public:
         m_layer_way_many_nodes.add_field("num_nodes", OFTInteger, 4);
         m_layer_way_many_nodes.add_field("closed", OFTInteger, 1);
 
+        m_layer_way_long_segments.add_field("way_id", OFTInteger, 10);
+        m_layer_way_long_segments.add_field("timestamp", OFTString, 20);
+        m_layer_way_long_segments.add_field("closed", OFTInteger, 1);
+
         open_writer(m_writer_self_intersection, output_dirname,
                     "way-self-intersection");
         open_writer(m_writer_spike, output_dirname, "way-spike");
@@ -434,6 +445,7 @@ public:
             open_writer(m_writer_close_nodes, output_dirname,
                         "way-close-nodes");
         open_writer(m_writer_many_nodes, output_dirname, "way-many-nodes");
+        open_writer(m_writer_long_segment, output_dirname, "way-long-segment");
     }
 
     void way(osmium::Way const &way)
@@ -495,6 +507,22 @@ public:
         }
 
         auto segments = create_segment_list(way.nodes());
+
+        for (auto const &segment : segments) {
+            auto const distance = osmium::geom::haversine::distance(
+                segment.first(), segment.second());
+            if (distance > m_options.max_segment_length) {
+                ++m_stats.long_segment;
+                (*m_writer_long_segment)(way);
+                gdalcpp::Feature feature{m_layer_way_long_segments,
+                                         m_factory.create_linestring(way)};
+                feature.set_field("way_id", static_cast<int32_t>(way.id()));
+                feature.set_field("timestamp", ts.c_str());
+                feature.set_field("closed", way.is_closed());
+                feature.add_to_layer();
+                break;
+            }
+        }
 
         if (segments.size() < 2) {
             return;
@@ -598,6 +626,7 @@ public:
         (*m_writer_duplicate_node).close();
         (*m_writer_close_nodes).close();
         (*m_writer_many_nodes).close();
+        (*m_writer_long_segment).close();
     }
 
     [[nodiscard]] stats_type const &stats() const noexcept { return m_stats; }
@@ -662,6 +691,9 @@ static options_type parse_command_line(int argc, char *argv[])
             std::exit(0);
         case 'm':
             options.max_nodes = std::atoi(optarg);
+            break;
+        case 's':
+            options.max_segment_length = std::atof(optarg);
             break;
         case 'q':
             options.verbose = false;
@@ -743,6 +775,7 @@ try {
             add("way_duplicate_node", handler.stats().duplicate_node);
             add("way_close_nodes", handler.stats().close_nodes);
             add("way_many_nodes", handler.stats().many_nodes);
+            add("way_long_segment", handler.stats().long_segment);
         });
 
     osmium::MemoryUsage memory_usage;
