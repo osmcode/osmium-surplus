@@ -7,6 +7,7 @@
 
 #include <cstdlib>
 #include <exception>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -20,7 +21,7 @@ class StatsHandler : public osmium::diff_handler::DiffHandler {
 
 public:
     void node(const osmium::DiffNode& dnode) {
-        if (dnode.first()) {
+        if (dnode.first() || dnode.curr().deleted()) {
             return;
         }
 
@@ -40,10 +41,12 @@ public:
     }
 
     void print_result() {
-        std::cout << "node changes:              " << count_node_changes << '\n';
-        std::cout << " w/same location:          " << count_node_changes_same_location << '\n';
-        std::cout << "node changes (tagged):     " << count_node_changes_tagged << '\n';
-        std::cout << " w/same location (tagged): " << count_node_changes_same_location_tagged << '\n';
+        std::cout << "node changes:            " << std::setw(12) << count_node_changes << '\n';
+        std::cout << " same location:          " << std::setw(12) << count_node_changes_same_location << '\n';
+        std::cout << "node changes (tagged):   " << std::setw(12) << count_node_changes_tagged << '\n';
+        std::cout << " same location:          " << std::setw(12) << count_node_changes_same_location_tagged << '\n';
+        std::cout << "node changes (untagged): " << std::setw(12) << (count_node_changes - count_node_changes_tagged) << '\n';
+        std::cout << " same location:          " << std::setw(12) << (count_node_changes_same_location - count_node_changes_same_location_tagged) << '\n';
     }
 
 }; // class StatsHandler
