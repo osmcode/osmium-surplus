@@ -21,7 +21,7 @@ class StatsHandler : public osmium::diff_handler::DiffHandler {
 
 public:
     void node(const osmium::DiffNode& dnode) {
-        if (dnode.first() || dnode.curr().deleted()) {
+        if (dnode.first() || dnode.prev().deleted() || dnode.curr().deleted()) {
             return;
         }
 
