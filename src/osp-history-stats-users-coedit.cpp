@@ -58,7 +58,7 @@ public:
         std::ofstream out{filename};
         out << "graph osmcoedit {\n";
         for (auto const &p : m_userpairs) {
-            out << "  U" << p.first.first << " -- U" << p.first.second << " [weigth=" << p.second << "]\n";
+            out << "  U" << p.first.first << " -- U" << p.first.second << " [weight=" << p.second << "]\n";
         }
         out << "}\n";
     }
