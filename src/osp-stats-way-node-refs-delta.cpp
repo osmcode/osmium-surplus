@@ -10,6 +10,7 @@
 #include <array>
 #include <cstdlib>
 #include <iostream>
+#include <tuple>
 
 /* ========================================================================= */
 
@@ -30,7 +31,8 @@ public:
             ++m_way_count;
             m_way_nodes_count += nodes.size();
 
-            std::adjacent_find(nodes.cbegin(), nodes.cend(),
+            // we are only use std:adjacent_find for the side-effects
+            std::ignore = std::adjacent_find(nodes.cbegin(), nodes.cend(),
                                [&](auto const &a, auto const &b) {
                                    int64_t diff = b.ref() - a.ref();
 
