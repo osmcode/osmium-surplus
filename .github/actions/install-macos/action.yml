@@ -8,7 +8,6 @@ runs:
         brew install \
           boost \
           fmt \
-          gdal \
-          sqlite
+          gdal
       shell: bash
 
