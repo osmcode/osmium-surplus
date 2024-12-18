@@ -10,4 +10,3 @@ runs:
           fmt \
           gdal
       shell: bash
-
