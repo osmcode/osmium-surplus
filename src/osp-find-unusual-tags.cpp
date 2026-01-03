@@ -400,7 +400,7 @@ try {
                 handler.stats().r_tag_boundary_multipolygon);
         });
 
-    osmium::MemoryUsage memory_usage;
+    const osmium::MemoryUsage memory_usage;
     if (memory_usage.peak() != 0) {
         vout << "Peak memory usage: " << memory_usage.peak() << " MBytes\n";
     }

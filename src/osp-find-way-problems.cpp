@@ -737,7 +737,7 @@ try {
              << " (change with --age, -a or --before, -b)\n";
     }
 
-    osmium::io::File file{input_filename};
+    const osmium::io::File file{input_filename};
     osmium::io::Reader reader{file, osmium::osm_entity_bits::way};
     if (file.format() == osmium::io::file_format::pbf &&
         !has_locations_on_ways(reader.header())) {
@@ -778,7 +778,7 @@ try {
             add("way_long_segment", handler.stats().long_segment);
         });
 
-    osmium::MemoryUsage memory_usage;
+    const osmium::MemoryUsage memory_usage;
     if (memory_usage.peak() != 0) {
         vout << "Peak memory usage: " << memory_usage.peak() << " MBytes\n";
     }

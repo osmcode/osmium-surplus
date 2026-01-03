@@ -357,7 +357,7 @@ try {
                     add("orphan_relations", handler.stats().orphan_relations);
                 });
 
-    osmium::MemoryUsage memory_usage;
+    const osmium::MemoryUsage memory_usage;
     if (memory_usage.peak() != 0) {
         vout << "Peak memory usage: " << memory_usage.peak() << " MBytes\n";
     }
