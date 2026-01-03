@@ -6,7 +6,6 @@ runs:
     - name: Install homebrew packages
       run: |
         brew install \
-          boost \
           fmt \
           gdal
       shell: bash

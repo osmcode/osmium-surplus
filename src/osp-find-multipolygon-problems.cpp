@@ -17,8 +17,6 @@
 #include <osmium/util/verbose_output.hpp>
 #include <osmium/visitor.hpp>
 
-#include <boost/iterator/filter_iterator.hpp>
-
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -69,27 +67,38 @@ class CheckMPManager
     [[nodiscard]] bool compare_tags(osmium::TagList const &rtags,
                                     osmium::TagList const &wtags) const
     {
-        auto const d =
-            std::count_if(wtags.cbegin(), wtags.cend(), std::cref(m_filter));
-        if (d > 0) {
-            using iterator =
-                boost::filter_iterator<MPFilter,
-                                       osmium::TagList::const_iterator>;
-            iterator const rfi_begin{std::cref(m_filter), rtags.cbegin(),
-                                     rtags.cend()};
-            iterator const rfi_end{std::cref(m_filter), rtags.cend(),
-                                   rtags.cend()};
-            iterator const wfi_begin{std::cref(m_filter), wtags.cbegin(),
-                                     wtags.cend()};
-            iterator const wfi_end{std::cref(m_filter), wtags.cend(),
-                                   wtags.cend()};
+        auto const rend = rtags.cend();
+        auto const wend = wtags.cend();
 
-            if (std::equal(wfi_begin, wfi_end, rfi_begin) &&
-                d == std::distance(rfi_begin, rfi_end)) {
-                return true;
+        auto rit = rtags.cbegin();
+        auto wit = wtags.cbegin();
+
+        while (rit != rend && wit != wend) {
+            if (!m_filter(*rit)) {
+                ++rit;
+                continue;
             }
+            if (!m_filter(*wit)) {
+                ++wit;
+                continue;
+            }
+            if (*rit == *wit) {
+                ++rit;
+                ++wit;
+                continue;
+            }
+            return false;
         }
-        return false;
+
+        while (rit != rend && !m_filter(*rit)) {
+            ++rit;
+        }
+
+        while (wit != wend && !m_filter(*wit)) {
+            ++wit;
+        }
+
+        return rit == rend && wit == wend;
     }
 
 public:
