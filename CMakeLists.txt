@@ -12,17 +12,11 @@ project(OsmiumSurplus VERSION 0.0.1 LANGUAGES CXX C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-
-#-----------------------------------------------------------------------------
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-set(AUTHOR "Jochen Topf <jochen@topf.org>")
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 #-----------------------------------------------------------------------------
 #
