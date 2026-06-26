@@ -28,9 +28,13 @@ class Histogram
 {
     osmium::nwr_array<std::vector<uint64_t>> m_data;
     std::string m_name;
+    std::string m_column_name;
 
 public:
-    explicit Histogram(std::string name) : m_name(std::move(name)) {}
+    explicit Histogram(std::string name, std::string column_name)
+    : m_name(std::move(name)), m_column_name(std::move(column_name))
+    {
+    }
 
     void incr(osmium::item_type type, std::size_t i)
     {
@@ -43,16 +47,15 @@ public:
 
     void init_db(Sqlite::Database *db) const
     {
-        db->exec(
-            std::string{"CREATE TABLE hist_"} + m_name +
-            " (ts VARCHAR, object_type CHAR, versions INTEGER, num INTEGER);");
+        db->exec(std::string{"CREATE TABLE hist_"} + m_name +
+                 " (ts VARCHAR, object_type CHAR, " + m_column_name +
+                 " INTEGER, num INTEGER);");
     }
 
     void write_db(Sqlite::Database *db, std::string const &ts) const
     {
-        auto const sql =
-            "INSERT INTO hist_" + m_name +
-            " (ts, object_type, versions, num) VALUES (?, ?, ?, ?)";
+        auto const sql = "INSERT INTO hist_" + m_name + " (ts, object_type, " +
+                         m_column_name + ", num) VALUES (?, ?, ?, ?)";
 
         Sqlite::Statement stmt{*db, sql.c_str()};
 
@@ -77,9 +80,9 @@ public:
 class StatsHandler : public osmium::handler::Handler, public stats_basic
 {
     std::array<uint64_t, num_variables> m_variables = {0};
-    Histogram m_hist_versions{"versions"};
-    Histogram m_hist_members{"members"};
-    Histogram m_hist_nodes{"nodes"};
+    Histogram m_hist_versions{"versions", "version"};
+    Histogram m_hist_members{"members", "members"};
+    Histogram m_hist_nodes{"way_nodes", "nodes"};
     osmium::Timestamp m_max_timestamp{};
 
     uint64_t &v(names n) noexcept { return m_variables[n]; }
