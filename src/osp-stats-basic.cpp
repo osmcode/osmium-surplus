@@ -293,12 +293,11 @@ public:
             osmium::apply_diff(reader, filter_handler);
         } else {
             if (reader.header().has_multiple_object_versions()) {
-                reader.close();
-                throw std::runtime_error{
-                    "Input file has multiple object versions. Use with "
-                    "--timestamp/-t ?"};
+                vout() << "Warning: File has multiple object versions. Use "
+                          "with --timestamp/-t ?\n";
+            } else {
+                vout() << "...this is an OSM file without history.\n";
             }
-            vout() << "...this is an OSM file without history.\n";
             vout() << "Processing data...\n";
             osmium::ProgressBar progress_bar{reader.file_size(),
                                              vout().verbose()};
