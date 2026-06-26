@@ -17,7 +17,7 @@ a-z, A-Z, _ (underscore), - (hyphen), and : (semicolon) are printed as `@`.
 Relation without `type` tag are stored in the file `UNKNOWN.osm.pbf`.
 
 In addition a SQLite database `relation-types.db` is created in the output
-directory containing a single table caled `types` which contains a list
+directory containing a single table called `types` which contains a list
 of types, the file basenames used and a count of relations of that type.
 
 # BUGS
