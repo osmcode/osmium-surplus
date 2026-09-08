@@ -5,11 +5,11 @@
 
 C++11 wrapper classes for GDAL/OGR.
 
-Version 1.1.1
+Version 1.4.0
 
 https://github.com/joto/gdalcpp
 
-Copyright 2015 Jochen Topf <jochen@topf.org>
+Copyright 2015-2026 Jochen Topf <jochen@topf.org>
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -37,31 +37,31 @@ DEALINGS IN THE SOFTWARE.
 
 */
 
-#include <algorithm>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
 #include <gdal_priv.h>
 #include <gdal_version.h>
 #include <ogr_api.h>
 #include <ogrsf_frmts.h>
 
-namespace gdalcpp {
+#include <algorithm>
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <utility>
+#include <vector>
 
-#if GDAL_VERSION_MAJOR >= 2
-    using gdal_driver_type = GDALDriver;
-    using gdal_dataset_type = GDALDataset;
+#ifdef _MSC_VER
+# define GDALCPP_EXPORT __declspec(dllexport)
 #else
-    using gdal_driver_type = OGRSFDriver;
-    using gdal_dataset_type = OGRDataSource;
+# define GDALCPP_EXPORT __attribute__ ((visibility("default")))
 #endif
+
+namespace gdalcpp {
 
     /**
      * Exception thrown for all errors in this class.
      */
-    class gdal_error : public std::runtime_error {
+    class GDALCPP_EXPORT gdal_error : public std::runtime_error {
 
         std::string m_driver;
         std::string m_dataset;
@@ -85,23 +85,23 @@ namespace gdalcpp {
             m_error(error) {
         }
 
-        const std::string& driver() const {
+        [[nodiscard]] const std::string& driver() const noexcept {
             return m_driver;
         }
 
-        const std::string& dataset() const {
+        [[nodiscard]] const std::string& dataset() const noexcept {
             return m_dataset;
         }
 
-        const std::string& layer() const {
+        [[nodiscard]] const std::string& layer() const noexcept {
             return m_layer;
         }
 
-        const std::string& field() const {
+        [[nodiscard]] const std::string& field() const noexcept {
             return m_field;
         }
 
-        OGRErr error() const {
+        [[nodiscard]] OGRErr error() const noexcept {
             return m_error;
         }
 
@@ -110,63 +110,61 @@ namespace gdalcpp {
     namespace detail {
 
         struct init_wrapper {
-#if GDAL_VERSION_MAJOR >= 2
-            init_wrapper() { GDALAllRegister(); }
-#else
-            init_wrapper() { OGRRegisterAll(); }
-            ~init_wrapper() { OGRCleanupAll(); }
-#endif
-        };
+            init_wrapper() noexcept {
+                GDALAllRegister();
+            }
+        }; // struct init_wrapper
 
         struct init_library {
+
             init_library() {
-                static init_wrapper iw;
+                static init_wrapper const iw;
             }
-        };
+
+        }; // struct init_library
 
         class Driver : private init_library {
 
-            gdal_driver_type* m_driver;
+            GDALDriver* m_driver;
 
         public:
 
             Driver(const std::string& driver_name) :
-                init_library(),
-#if GDAL_VERSION_MAJOR >= 2
                 m_driver(GetGDALDriverManager()->GetDriverByName(driver_name.c_str())) {
-#else
-                m_driver(OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(driver_name.c_str())) {
-#endif
                 if (!m_driver) {
-                    throw gdal_error(std::string("unknown driver: '") + driver_name + "'", OGRERR_NONE, driver_name);
+                    throw gdal_error{std::string{"unknown driver: '"} + driver_name + "'",
+                                     OGRERR_NONE,
+                                     driver_name};
                 }
             }
 
-            gdal_driver_type& get() const {
+            [[nodiscard]] GDALDriver& get() const noexcept {
                 return *m_driver;
             }
 
-        }; // struct Driver
+        }; // class Driver
 
-        struct Options {
+        class Options {
 
             std::vector<std::string> m_options;
-            std::unique_ptr<const char*[]> m_ptrs;
+            std::unique_ptr<char*[]> m_ptrs;
+
+        public:
 
             Options(const std::vector<std::string>& options) :
                 m_options(options),
-                m_ptrs(new const char*[options.size()+1]) {
-                std::transform(m_options.begin(), m_options.end(), m_ptrs.get(), [&](const std::string& s) {
+                m_ptrs(new char*[options.size() + 1]) {
+                std::transform(m_options.begin(), m_options.end(), m_ptrs.get(), [&](std::string& s) {
                     return s.data();
                 });
                 m_ptrs[options.size()] = nullptr;
             }
 
-            char** get() const {
-                return const_cast<char**>(m_ptrs.get());
+            [[nodiscard]] char** get() const noexcept {
+                return m_ptrs.get();
             }
 
-        }; // struct Options
+        }; // class Options
 
     } // namespace detail
 
@@ -178,33 +176,37 @@ namespace gdalcpp {
 
         SRS() :
             m_spatial_reference() {
-            auto result = m_spatial_reference.SetWellKnownGeogCS("WGS84");
+            const auto result = m_spatial_reference.SetWellKnownGeogCS("CRS84");
             if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("can not initialize spatial reference system WGS84"), result);
+                throw gdal_error{std::string{"can not initialize spatial reference system WGS84"},
+                                 result};
             }
         }
 
         explicit SRS(int epsg) :
             m_spatial_reference() {
-            auto result = m_spatial_reference.importFromEPSG(epsg);
+            const auto result = m_spatial_reference.importFromEPSG(epsg);
             if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("can not initialize spatial reference system for EPSG:") + std::to_string(epsg), result);
+                throw gdal_error{std::string{"can not initialize spatial reference system for EPSG:"} + std::to_string(epsg),
+                                 result};
             }
         }
 
         explicit SRS(const char* name) :
             m_spatial_reference() {
-            auto result = m_spatial_reference.importFromProj4(name);
+            const auto result = m_spatial_reference.importFromProj4(name);
             if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("can not initialize spatial reference system '") + name + "'", result);
+                throw gdal_error{std::string{"can not initialize spatial reference system '"} + name + "'",
+                                 result};
             }
         }
 
         explicit SRS(const std::string& name) :
             m_spatial_reference() {
-            auto result = m_spatial_reference.importFromProj4(name.c_str());
+            const auto result = m_spatial_reference.importFromProj4(name.c_str());
             if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("can not initialize spatial reference system '") + name + "'", result);
+                throw gdal_error{std::string{"can not initialize spatial reference system '"} + name + "'",
+                                 result};
             }
         }
 
@@ -212,11 +214,11 @@ namespace gdalcpp {
             m_spatial_reference(spatial_reference) {
         }
 
-        OGRSpatialReference& get() {
+        [[nodiscard]] OGRSpatialReference& get() noexcept {
             return m_spatial_reference;
         }
 
-        const OGRSpatialReference& get() const {
+        [[nodiscard]] const OGRSpatialReference& get() const noexcept {
             return m_spatial_reference;
         }
 
@@ -226,12 +228,8 @@ namespace gdalcpp {
 
         struct gdal_dataset_deleter {
 
-            void operator()(gdal_dataset_type* ds) {
-#if GDAL_VERSION_MAJOR >= 2
+            void operator()(GDALDataset* ds) {
                 GDALClose(ds);
-#else
-                OGRDataSource::DestroyDataSource(ds);
-#endif
             }
 
         }; // struct gdal_dataset_deleter
@@ -240,7 +238,7 @@ namespace gdalcpp {
         std::string m_dataset_name;
         detail::Options m_options;
         SRS m_srs;
-        std::unique_ptr<gdal_dataset_type, gdal_dataset_deleter> m_dataset;
+        std::unique_ptr<GDALDataset, gdal_dataset_deleter> m_dataset;
         uint64_t m_edit_count = 0;
         uint64_t m_max_edit_count = 0;
 
@@ -251,17 +249,16 @@ namespace gdalcpp {
             m_dataset_name(dataset_name),
             m_options(options),
             m_srs(srs),
-#if GDAL_VERSION_MAJOR >= 2
             m_dataset(detail::Driver(driver_name).get().Create(dataset_name.c_str(), 0, 0, 0, GDT_Unknown, m_options.get())) {
-#else
-            m_dataset(detail::Driver(driver_name).get().CreateDataSource(dataset_name.c_str(), m_options.get())) {
-#endif
             if (!m_dataset) {
-                throw gdal_error(std::string("failed to create dataset '") + dataset_name + "'", OGRERR_NONE, driver_name, dataset_name);
+                throw gdal_error{std::string{"failed to create dataset '"} + dataset_name + "'",
+                                 OGRERR_NONE,
+                                 driver_name,
+                                 dataset_name};
             }
         }
 
-        ~Dataset() {
+        ~Dataset() noexcept {
             try {
                 if (m_edit_count > 0) {
                     commit_transaction();
@@ -270,24 +267,24 @@ namespace gdalcpp {
             }
         }
 
-        const std::string& driver_name() const {
+        [[nodiscard]] const std::string& driver_name() const noexcept {
             return m_driver_name;
         }
 
-        const std::string& dataset_name() const {
+        [[nodiscard]] const std::string& dataset_name() const noexcept {
             return m_dataset_name;
         }
 
-        gdal_dataset_type& get() const {
+        [[nodiscard]] GDALDataset& get() const noexcept {
             return *m_dataset;
         }
 
-        SRS& srs() {
+        [[nodiscard]] SRS& srs() noexcept {
             return m_srs;
         }
 
         void exec(const char* sql) {
-            auto result = m_dataset->ExecuteSQL(sql, nullptr, nullptr);
+            OGRLayer *const result = m_dataset->ExecuteSQL(sql, nullptr, nullptr);
             if (result) {
                 m_dataset->ReleaseResultSet(result);
             }
@@ -298,26 +295,12 @@ namespace gdalcpp {
         }
 
         Dataset& start_transaction() {
-#if GDAL_VERSION_MAJOR >= 2
             m_dataset->StartTransaction();
-#else
-            OGRLayer* layer = m_dataset->GetLayer(0);
-            if (layer) {
-                layer->StartTransaction();
-            }
-#endif
             return *this;
         }
 
         Dataset& commit_transaction() {
-#if GDAL_VERSION_MAJOR >= 2
             m_dataset->CommitTransaction();
-#else
-            OGRLayer* layer = m_dataset->GetLayer(0);
-            if (layer) {
-                layer->CommitTransaction();
-            }
-#endif
             m_edit_count = 0;
             return *this;
         }
@@ -334,7 +317,7 @@ namespace gdalcpp {
             }
         }
 
-        Dataset& enable_auto_transactions(uint64_t edits = 100000) {
+        Dataset& enable_auto_transactions(uint64_t edits = 100000) noexcept {
             m_max_edit_count = edits;
             return *this;
         }
@@ -352,34 +335,37 @@ namespace gdalcpp {
     class Layer {
 
         detail::Options m_options;
-        Dataset& m_dataset;
+        Dataset* m_dataset;
         OGRLayer* m_layer;
 
     public:
 
         Layer(Dataset& dataset, const std::string& layer_name, OGRwkbGeometryType type, const std::vector<std::string>& options = {}) :
             m_options(options),
-            m_dataset(dataset),
+            m_dataset(&dataset),
             m_layer(dataset.get().CreateLayer(layer_name.c_str(), &dataset.srs().get(), type, m_options.get())) {
             if (!m_layer) {
-                throw gdal_error(std::string("failed to create layer '") + layer_name + "'", OGRERR_NONE,
-                    dataset.driver_name(), dataset.dataset_name(), layer_name);
+                throw gdal_error{std::string{"failed to create layer '"} + layer_name + "'",
+                                 OGRERR_NONE,
+                                 dataset.driver_name(),
+                                 dataset.dataset_name(),
+                                 layer_name};
             }
         }
 
-        OGRLayer& get() {
+        [[nodiscard]] OGRLayer& get() noexcept {
             return *m_layer;
         }
 
-        const OGRLayer& get() const {
+        [[nodiscard]] const OGRLayer& get() const noexcept {
             return *m_layer;
         }
 
-        Dataset& dataset() const {
-            return m_dataset;
+        [[nodiscard]] Dataset& dataset() const noexcept {
+            return *m_dataset;
         }
 
-        const char* name() const {
+        [[nodiscard]] const char* name() const {
             return m_layer->GetName();
         }
 
@@ -389,8 +375,12 @@ namespace gdalcpp {
             field.SetPrecision(precision);
 
             if (m_layer->CreateField(&field) != OGRERR_NONE) {
-                throw gdal_error(std::string("failed to create field '") + field_name + "' in layer '" + name() + "'", OGRERR_NONE,
-                    m_dataset.driver_name(), m_dataset.dataset_name(), name(), field_name);
+                throw gdal_error{std::string{"failed to create field '"} + field_name + "' in layer '" + name() + "'",
+                                 OGRERR_NONE,
+                                 m_dataset->driver_name(),
+                                 m_dataset->dataset_name(),
+                                 name(),
+                                 field_name};
             }
 
             return *this;
@@ -398,30 +388,21 @@ namespace gdalcpp {
 
         void create_feature(OGRFeature* feature) {
             dataset().prepare_edit();
-            OGRErr result = m_layer->CreateFeature(feature);
+            const auto result = m_layer->CreateFeature(feature);
             if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("creating feature in layer '") + name() + "' failed", result, dataset().driver_name(), dataset().dataset_name());
+                throw gdal_error{std::string{"creating feature in layer '"} + name() + "' failed",
+                                 result,
+                                 dataset().driver_name(),
+                                 dataset().dataset_name()};
             }
             dataset().finalize_edit();
         }
 
         Layer& start_transaction() {
-#if GDAL_VERSION_MAJOR < 2
-            OGRErr result = m_layer->StartTransaction();
-            if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("starting transaction on layer '") + name() + "' failed", result, m_dataset.driver_name(), m_dataset.dataset_name(), name());
-            }
-#endif
             return *this;
         }
 
         Layer& commit_transaction() {
-#if GDAL_VERSION_MAJOR < 2
-            OGRErr result = m_layer->CommitTransaction();
-            if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("committing transaction on layer '") + name() + "' failed", result, m_dataset.driver_name(), m_dataset.dataset_name(), name());
-            }
-#endif
             return *this;
          }
 
@@ -437,34 +418,37 @@ namespace gdalcpp {
 
         }; // struct ogr_feature_deleter
 
-        Layer& m_layer;
+        Layer* m_layer;
         std::unique_ptr<OGRFeature, ogr_feature_deleter> m_feature;
 
     public:
 
         Feature(Layer& layer, std::unique_ptr<OGRGeometry>&& geometry) :
-            m_layer(layer),
-            m_feature(OGRFeature::CreateFeature(m_layer.get().GetLayerDefn())) {
+            m_layer(&layer),
+            m_feature(OGRFeature::CreateFeature(m_layer->get().GetLayerDefn())) {
             if (!m_feature) {
-                throw std::bad_alloc();
+                throw std::bad_alloc{};
             }
-            OGRErr result = m_feature->SetGeometryDirectly(geometry.release());
+            const auto result = m_feature->SetGeometryDirectly(geometry.release());
             if (result != OGRERR_NONE) {
-                throw gdal_error(std::string("setting feature geometry in layer '") + m_layer.name() + "' failed", result, m_layer.dataset().driver_name(), m_layer.dataset().dataset_name());
+                throw gdal_error{std::string{"setting feature geometry in layer '"} + m_layer->name() + "' failed",
+                                 result,
+                                 m_layer->dataset().driver_name(),
+                                 m_layer->dataset().dataset_name()};
             }
         }
 
         void add_to_layer() {
-            m_layer.create_feature(m_feature.get());
+            m_layer->create_feature(m_feature.get());
         }
 
-        template <class T>
+        template <typename T>
         Feature& set_field(int n, T&& arg) {
             m_feature->SetField(n, std::forward<T>(arg));
             return *this;
         }
 
-        template <class T>
+        template <typename T>
         Feature& set_field(const char* name, T&& arg) {
             m_feature->SetField(name, std::forward<T>(arg));
             return *this;
@@ -473,5 +457,7 @@ namespace gdalcpp {
     }; // class Feature
 
 } // namespace gdalcpp
+
+#undef GDALCPP_EXPORT
 
 #endif // GDALCPP_HPP
