@@ -64,7 +64,7 @@ public:
         UserStats &us = object(node);
 
         // record position of first edit
-        if (!us.first_location) {
+        if (us.first_location.is_undefined()) {
             us.first_location = node.location();
         }
     }
@@ -106,7 +106,7 @@ public:
                     bind_int(us.first_edit).
                     bind_int(us.last_edit);
 
-                if (us.first_location) {
+                if (us.first_location.is_defined()) {
                     statement_insert.bind_double(us.first_location.lon()).
                                      bind_double(us.first_location.lat());
                 } else {
