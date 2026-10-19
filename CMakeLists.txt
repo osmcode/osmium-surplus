@@ -124,7 +124,15 @@ endif(CPPCHECK)
 #
 #-----------------------------------------------------------------------------
 message(STATUS "Looking for clang-tidy")
-find_program(CLANG_TIDY NAMES clang-tidy clang-tidy-22 clang-tidy-21 clang-tidy-20 clang-tidy-19 clang-tidy-18 clang-tidy-17 clang-tidy-16 clang-tidy-15)
+
+SET(CLANG_TIDY_PROGRAMS)
+foreach(_no RANGE 15 50)
+    LIST(APPEND CLANG_TIDY_PROGRAMS "clang-tidy-${_no}")
+endforeach()
+LIST(APPEND CLANG_TIDY_PROGRAMS "clang-tidy")
+LIST(REVERSE CLANG_TIDY_PROGRAMS)
+
+find_program(CLANG_TIDY NAMES ${CLANG_TIDY_PROGRAMS})
 
 if(CLANG_TIDY)
     message(STATUS "Looking for clang-tidy - found ${CLANG_TIDY}")
